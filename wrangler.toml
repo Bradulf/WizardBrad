@@ -1,0 +1,16 @@
+name = "wizardbrad"
+compatibility_date = "2025-08-14"
+
+# Where your Vite build outputs
+pages_build_output_dir = "dist"
+
+# (Optional now, needed when you add D1)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "wizardbrad-db"
+# database_id = "REPLACE_ME_AFTER_CREATE"
+
+# (Optional example for KV if you use it)
+# [[kv_namespaces]]
+# binding = "AFFILIATE_KV"
+# id = "REPLACE_ME"
