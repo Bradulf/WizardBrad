@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Wrangler temp build output
+.wrangler/
+wrangler/
+wrangler/tmp/
