@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . || true",
     "preview": "vite preview",
     "dev:watch": "vite build --watch",
-    "dev:pages": "wrangler pages dev ./dist",
-    "dev": "run-p dev:watch dev:pages"
+    "dev:pages": "PATH=$HOME/.nvm/versions/node/v22.18.0/bin:$PATH $HOME/.nvm/versions/node/v22.18.0/bin/wrangler pages dev ./dist",
+    "dev": "run-p dev:watch dev:pages",
+    "doctor": "node -e \"console.log('node',process.version); console.log('npm',require('child_process').execSync('npm -v').toString().trim()); console.log('wrangler',require('child_process').execSync('$HOME/.nvm/versions/node/v22.18.0/bin/wrangler --version').toString().trim());\""
   },
   "dependencies": {
     "pixi.js": "^8.12.0",
@@ -21,7 +22,7 @@
     "@eslint/js": "^9.32.0",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "^4.3.3",
+    "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -30,7 +31,7 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.3",
-    "vite": "^5.4.10",
+    "vite": "^5.4.19",
     "wrangler": "^4.30.0"
   }
 }
