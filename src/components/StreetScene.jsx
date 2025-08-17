@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Assets, Texture, AnimatedSprite } from 'pixi.js';
 
 export default function StreetScene() {
   const mountRef = useRef(null);
@@ -10,20 +10,40 @@ export default function StreetScene() {
 
     (async () => {
       const app = new Application();
-      await app.init({
-        width: window.innerWidth,
-        height: 400,
-        background: '#0f0f17',
-        antialias: true,
-      });
+        const mount = mountRef.current;
+        const getSize = () => ({
+              w: mount?.clientWidth ?? window.innerWidth,
+              h: mount?.clientHeight ?? Math.round(window.innerHeight * 0.5)
+        });
+        const { w: initW, h: initH } = getSize();
+        await app.init({
+              width: initW,
+              height: initH,
+              background: '#0f0f17',
+              antialias: true,
+              resolution: window.devicePixelRatio || 1
+        });
       if (destroyed) return app.destroy(true);
       appRef.current = app;
       mountRef.current.appendChild(app.canvas);
 
+        // Preload wizard frames (individual PNGs)
+        const wizardFramePaths = [
+            '/assets/wizard/walk_0.png',
+            '/assets/wizard/walk_1.png',
+            '/assets/wizard/walk_2.png',
+            '/assets/wizard/walk_3.png',
+            '/assets/wizard/walk_4.png',
+            '/assets/wizard/walk_5.png',
+        ];
+        const wizardTextures = await Promise.all(
+            wizardFramePaths.map(p => Assets.load(p))
+        );
+
       // --- CONFIG ---
       const colWidth = 180;            // width of building columns on L/R
       const segH = 160;                // height of one vertical tile segment
-      const sceneH = app.screen.height;
+      let sceneH = app.screen.height;
       const streetX = colWidth;
       const streetW = app.screen.width - colWidth * 2;
 
@@ -118,12 +138,19 @@ export default function StreetScene() {
         trashContainer.addChild(tr);
       }
 
-      // Wizard placeholder (centered)
-      const wizard = new Graphics();
-      wizard.circle(0, 0, 20).fill(0x00ffff);
-      wizard.x = app.screen.width / 2;
-      wizard.y = sceneH * 0.55; // a hair below center
-      nearLayer.addChild(wizard);
+// Wizard animated sprite (top-down walk)
+        const wizard = new AnimatedSprite(wizardTextures);
+        wizard.anchor.set(0.5);                 // center on feet-ish; tweak if needed
+        wizard.animationSpeed = 0.15;           // 0.1–0.2 looks natural
+        wizard.play();
+
+        wizard.x = app.screen.width / 2;        // centered horizontally
+        wizard.y = sceneH * 0.55;               // a hair below center like before
+
+// Scale so it reads at your hero size; adjust to taste
+        wizard.scale.set(1.0);                  // try 0.8–1.4 depending on your art
+
+        nearLayer.addChild(wizard);
 
       // Scroll speeds (pixels per frame)
       const speedFar = 0.5;
@@ -167,8 +194,9 @@ export default function StreetScene() {
 
       // Handle resize (keep columns on edges; recalc street width)
       function onResize() {
-        const w = window.innerWidth;
-        app.renderer.resize(w, sceneH);
+        const { w, h } = getSize();
+        app.renderer.resize(w, h);
+        sceneH = app.screen.height;
 
         rightCol.x = w - colWidth;
         streetBG.clear().rect(colWidth, 0, w - colWidth * 2, sceneH).fill(0x3f3f46);
@@ -196,5 +224,5 @@ export default function StreetScene() {
     };
   }, []);
 
-  return <div ref={mountRef} style={{ width: '100%', height: 400 }} />;
+    return <div ref={mountRef} style={{ width: '100%', height: '50vh' }} />;
 }
