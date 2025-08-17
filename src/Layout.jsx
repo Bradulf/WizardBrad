@@ -1,6 +1,6 @@
 // Layout.jsx
 import MenuBar from "./components/MenuBar.jsx";
-import StreetScene from "./StreetScene.jsx";
+import StreetScene from "./components/StreetScene.jsx";
 
 export default function Layout({ children }) {
     return (
