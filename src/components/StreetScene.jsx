@@ -15,14 +15,15 @@ export default function StreetScene() {
               w: mount?.clientWidth ?? window.innerWidth,
               h: mount?.clientHeight ?? Math.round(window.innerHeight * 0.5)
         });
-        const { w: initW, h: initH } = getSize();
         await app.init({
-              width: initW,
-              height: initH,
-              background: '#0f0f17',
-              antialias: true,
-              resolution: window.devicePixelRatio || 1
+            background: '#0f0f17',
+            antialias: true,
+            autoDensity: true,         // match canvas pixels to CSS px * DPR
+            resizeTo: mountRef.current // PIXI resizes to the container automatically
         });
+        app.canvas.style.display = 'block';
+        app.canvas.style.width = '100%';
+        app.canvas.style.height = '100%';
       if (destroyed) return app.destroy(true);
       appRef.current = app;
       mountRef.current.appendChild(app.canvas);
@@ -44,8 +45,9 @@ export default function StreetScene() {
       const colWidth = 180;            // width of building columns on L/R
       const segH = 160;                // height of one vertical tile segment
       let sceneH = app.screen.height;
-      const streetX = colWidth;
-      const streetW = app.screen.width - colWidth * 2;
+      let streetX = colWidth;
+      let streetW = app.screen.width - colWidth * 2;
+      let dashW = Math.max(6, streetW * 0.02);
 
       // --- LAYERS ---
       const farLayer = new Container();   // trees, slow
@@ -98,7 +100,7 @@ export default function StreetScene() {
       // Lane dashes (repeat vertically)
       const dashContainer = new Container();
       midLayer.addChild(dashContainer);
-      const dashW = Math.max(6, streetW * 0.02);
+
       const dashH = 24;
       const gap = 32;
       const laneX = app.screen.width / 2 - dashW / 2;
@@ -138,16 +140,16 @@ export default function StreetScene() {
         trashContainer.addChild(tr);
       }
 
-// Wizard animated sprite (top-down walk)
+        // Wizard animated sprite (top-down walk)
         const wizard = new AnimatedSprite(wizardTextures);
         wizard.anchor.set(0.5);                 // center on feet-ish; tweak if needed
         wizard.animationSpeed = 0.15;           // 0.1–0.2 looks natural
         wizard.play();
 
-        wizard.x = app.screen.width / 2;        // centered horizontally
+        wizard.x = streetX + streetW / 2;        // centered horizontally
         wizard.y = sceneH * 0.55;               // a hair below center like before
 
-// Scale so it reads at your hero size; adjust to taste
+        // Scale so it reads at your hero size; adjust to taste
         wizard.scale.set(1.0);                  // try 0.8–1.4 depending on your art
 
         nearLayer.addChild(wizard);
@@ -194,18 +196,19 @@ export default function StreetScene() {
 
       // Handle resize (keep columns on edges; recalc street width)
       function onResize() {
-        const { w, h } = getSize();
-        app.renderer.resize(w, h);
+        const w = app.screen.width;
         sceneH = app.screen.height;
-
+        // recompute street geometry
+        streetX = colWidth;
+        streetW = w - colWidth * 2;
+        dashW = Math.max(6, streetW * 0.02);
         rightCol.x = w - colWidth;
-        streetBG.clear().rect(colWidth, 0, w - colWidth * 2, sceneH).fill(0x3f3f46);
+        streetBG.clear().rect(streetX, 0, streetW, sceneH).fill(0x3f3f46);
+        const newLaneX = streetX + streetW / 2 - dashW / 2;
 
-        // reposition lane dashes to center
-        const newLaneX = w / 2 - dashW / 2;
         for (const d of dashContainer.children) d.x = newLaneX;
 
-        wizard.x = w / 2;
+        wizard.x = streetX + streetW / 2;
       }
       window.addEventListener('resize', onResize);
 
@@ -224,5 +227,5 @@ export default function StreetScene() {
     };
   }, []);
 
-    return <div ref={mountRef} style={{ width: '100%', height: '50vh' }} />;
+    return <div ref={mountRef} style={{ width: '100%', height: '100%' }} />;
 }
