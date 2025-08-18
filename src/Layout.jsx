@@ -10,7 +10,7 @@ export default function Layout({ children }) {
                 <div className="mx-auto max-w-7xl px-4 py-3"><MenuBar /></div>
             </header>
 
-            <StreetHero theme="halloween" />  {/* swap to "storm" or "none" */}
+            <StreetHero theme="storm" />  {/* swap to "storm" or "none" */}
 
             <main className="mx-auto max-w-3xl px-4 pt-10 pb-16">
                 <div className="rounded-2xl border border-neutral-800 bg-neutral-900">{children}</div>
