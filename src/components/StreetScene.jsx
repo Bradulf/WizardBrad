@@ -138,11 +138,34 @@ export default function StreetScene() {
 
             // >>>>>>>>>>>>>>>>>>>> HELPER #2: rebuildColumns <<<<<<<<<<<<<<<<<<<<<
             function rebuildColumns() {
-                leftCol.removeChildren();
-                rightCol.removeChildren();
-                buildColumnTiles(leftCol);
-                buildColumnTiles(rightCol);
-                rightCol.x = app.screen.width - colWidth;
+                const tilesNeeded = Math.ceil(sceneH / segH) + 2;
+
+                const rebuild = (col, x) => {
+                    col.removeChildren();
+                    col.x = x;
+                    for (let i = 0; i < tilesNeeded; i++) {
+                        const y = i * segH - segH;
+                        const g = new Graphics();
+                        g.rect(0, 0, colWidth, segH - 8).fill(0x232334);
+                        g.y = y;
+
+                        const cols = 4, rows = 5;
+                        for (let r = 0; r < rows; r++) {
+                            for (let c = 0; c < cols; c++) {
+                                const win = new Graphics();
+                                const lit = Math.random() > 0.4;
+                                win.rect(0, 0, 18, 14).fill(lit ? 0xffd86b : 0x2b2b2b);
+                                win.x = 16 + c * 40;
+                                win.y = 12 + r * 26 + (Math.random() * 4 - 2);
+                                g.addChild(win);
+                            }
+                        }
+                        col.addChild(g);
+                    }
+                };
+
+                rebuild(leftCol, 0);
+                rebuild(rightCol, app.screen.width - colWidth);
             }
 
             // ------------------------------ TICKER ------------------------------
@@ -161,7 +184,8 @@ export default function StreetScene() {
 
                 for (const d of dashContainer.children) {
                     d.y += speedMid;
-                    if (d.y >= sceneH) d.y -= (dashH + gap) * (Math.ceil(sceneH / (dashH + gap)) + 2);
+                    const stride = (dashH + gap) * (Math.ceil(sceneH / (dashH + gap)) + 2);
+                    if (d.y >= sceneH) d.y -= stride;
                 }
                 for (const t of treeContainer.children) {
                     t.y += speedFar;
